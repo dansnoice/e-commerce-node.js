@@ -12,10 +12,12 @@ app.use(express.json())
 
 //require router
 
-const customerRouter= require("/routes/customersRouter.js")
+const customerRouter= require("./routes/customersRouter.js")
+const productsRouter= require("./routes/productsRouter.js")
 
 //app.use router Customer base path
-app.use("/api/customer", customerRouter)
+app.use("/api/customers", customerRouter)
+app.use("/api/products", productsRouter)
 
 
 

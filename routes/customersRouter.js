@@ -1,6 +1,6 @@
 //import router
 const express = require("express");
-const router = express.router();
+const router = express.Router();
 //import functions
 const {
   createCustomer,
@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
 });
 router.get("/", async (req, res) => {
   try {
-    const customers = await Customer.find();
+    const customers = await getCustomers();
     res.status(200).json({
       message: "Successfully found customers",
       payload: customers,
