@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
-
 const objectId = mongoose.Schema.Types.objectId;
 
 //create schema
-const cartSchema = new mongoose.Schema(
+const orderSchema = new mongoose.Schema(
   {
     customer: {
       type: objectId,
@@ -12,13 +11,8 @@ const cartSchema = new mongoose.Schema(
     },
     items: [
       {
-        item: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Item",
-        },
-        quantity: {
-          type: Number,
-        },
+        type: objectId,
+        ref: "Item",
       },
     ],
     total: {
@@ -28,9 +22,7 @@ const cartSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      //set possible string values
       enum: ["pending", "shipped", "delivered", "cancelled"],
-      //set default
       default: "pending",
       required: true,
     },
@@ -39,6 +31,6 @@ const cartSchema = new mongoose.Schema(
 );
 
 //initialize schema as model
-const Cart = mongoose.model("Cart", cartSchema);
+const Order = mongoose.model("Order", orderSchema);
 //export model
 module.exports = Order;
