@@ -2,12 +2,14 @@ const Cart = require("../models/CartModel");
 //generator code as temporary placeholder for SessionID
 const crypto = require("crypto");
 const Product = require("../models/ProductModel");
+const { findByIdAndUpdate } = require("../models/OrderModel");
+const mongoose = require("mongoose")
+
 
 const generateSessionId = () => {
   return crypto.randomBytes(16).toString("hex"); // hex string --notARealSessionId
 };
 
-const sessionId = generateSessionId();
 //this function is not for interacting with the cart
 //the intent of this function is to be called at the end of the createCustomer function inside customersController
 const initCart = async (customer) => {
@@ -23,8 +25,15 @@ const initCart = async (customer) => {
 };
 //the similar but different intent of this function is to create a cart for a guest user
 //called at the Product POST method to ensure a call to action from cart counter icon in corner
-const makeCart = async (sessionId) => {
+const makeCart = async (productSession) => {
   try {
+    if (productSession.sessionId) {
+      const checkCart = await Cart.findOne({
+        sessionId: productSession.sessionId,
+      });
+      return checkCart;
+    }
+    const sessionId = generateSessionId();
     const cart = await Cart.create({ sessionId });
     return cart;
   } catch (error) {
@@ -39,20 +48,21 @@ const getCarts = async () => {
     throw error;
   }
 };
-//i will call this from product Controller as I imagine a user viewing a product (a GET request) before deciding to add to cart. for products which may be a combination (sale- toy with batteries - usually sold separately but engaged jointly) we check the body to
+//i will call this from product router as I imagine a user viewing a product (a GET request) before deciding to add to cart. for products which may be a combination (sale- toy with batteries - usually sold separately but engaged jointly) we check the body to
 
 const addProductToCart = async (cartData) => {
   try {
     let updatedItems = [];
     let total = 0;
     //check that our put request has items in the body
-    if (cartData.items.item && cartData.items.quantity) {
+    if (Array.isArray(cartData.items) && cartData.items.length > 0) {
       //for each {Product: Quantity pair}
       for (const i of cartData.items) {
         //item=product found by the i (ObjectId: Quantity)
         const item = await Product.findById(i.item);
         //tempTotal for each pair, using foundProduct's cost
         const itemTotal = item.price * i.quantity;
+
         //update subtotal
         total += itemTotal;
         //push pair to cart update array
@@ -60,10 +70,34 @@ const addProductToCart = async (cartData) => {
           item: item._id,
           quantity: i.quantity,
         });
+        console.log(
+          `this is itemTotal: ${updatedItems} this is ${cartData}`
+        );
       }
     }
+    if (cartData.customer !== null) {
+      console.log(
+        "This is a confirmation that 'if (cartData.customer !== null)' is truthy"
+      );
+      const cart = await Cart.findOneAndUpdate(
+        { customer: new mongoose.Types.ObjectId(cartData.customer) },
+        {
+          //push to items every {Product._id:quantity} pair
+          $push: { items: { $each: updatedItems } },
+          //increment cart total
+          $inc: { total: total },
+        },
+        //will otherwise return old cart
+        { new: true }
+      );
+      console.log("HERE IS CONSOLE CART OF CUSTOMER" + cart);
+      return cart;
+    }
     //handling guest cart case - haven't made exclusive yet, but no cart should have both a sessionId && customer
-    if (cartData.sessionId) {
+    if (cartData.sessionId !== "null") {
+      console.log(
+        "This is a confirmation that 'if (cartData.sessionId !== null)' is truthy"
+      );
       //find cart
       const cart = await Cart.findOneAndUpdate(
         { sessionId: cartData.sessionId }, // since we don't have a uuid I set query key to sessionId and use the req body sessionId

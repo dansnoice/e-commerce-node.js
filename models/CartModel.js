@@ -7,7 +7,7 @@ const cartSchema = new mongoose.Schema(
   {
     customer: {
       type: ObjectId,
-      ref: "User",
+      ref: "Customer",
       default: null, //this allows a cart for a guest user
       //writing this with more features in mind, intent is to tie the Cart._id to the sessionID for continuity between pages in a full stack situation
       //when the user logs in (but before processing) shipping and payment, the cart objectId will be updated to associate with the User._id as opposed to sessionId based _id.

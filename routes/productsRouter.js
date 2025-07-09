@@ -34,11 +34,12 @@ router.post("/", async (req, res) => {
     });
   }
 });
-router.put("/", async (req, res) => {
+router.patch("/", async (req, res) => {
   try {
     const cart = await addProductToCart(req.body);
     res.status(200).json({
-      message: "Successfully added product to cart"
+      message: "Successfully added product to cart",
+      payload: cart
     })
   } catch (error) {
     res.status(400).json({
@@ -47,5 +48,6 @@ router.put("/", async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
