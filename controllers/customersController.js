@@ -15,10 +15,22 @@ const createCustomer = async (customerData) => {
 const getCustomers = async () => {
   try {
     customers = await Customer.find();
+    return customers
   } catch (error) {
     throw error;
   }
 };
+const loginGuest = async() => {
+  try {
+    //check if customer exists
+    //if not, create customer
+
+    //no matter what migrate carts migrateCarts()
+
+  } catch (error) {
+    throw error
+  }
+}
 
 //exports
 module.exports = {

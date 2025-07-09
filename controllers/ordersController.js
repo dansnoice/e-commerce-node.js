@@ -1,36 +1,43 @@
-const mongoose = require("mongoose");
-const objectId = mongoose.Schema.Types.ObjectId;
+const Order = require("../models/OrderModel");
+const Cart = require("../models/CartModel");
+//generator code as temporary placeholder for SessionID
 
-//create schema
-const orderSchema = new mongoose.Schema(
-  {
-    customer: {
-      type: objectId,
-      ref: "User",
-      required: true,
-    },
-    items: [
-      {
-        type: objectId,
-        ref: "Item",
-      },
-    ],
-    total: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["pending", "shipped", "delivered", "cancelled"],
-      default: "pending",
-      required: true,
-    },
-  },
-  { timestamps: true }
-);
+const Product = require("../models/ProductModel");
 
-//initialize schema as model
-const Order = mongoose.model("Order", orderSchema);
-//export model
-module.exports = Order;
+const getOrder= async () => {
+  try {
+    const orders = await Order.find()
+    return orders
+  } catch (error) {
+    throw error
+  }
+}
+
+
+
+const placeOrder = async (cartData) => {
+  try {
+    const cart = await Cart.findById(cartData.customer);
+    if (!cart.customer && cart.sessionId) {
+      throw "Please log in and migrate guest cart";
+    }
+    if (cart.customer && !cart.sessionId) {
+      const newPendingOrder = await Order.create(cart);
+      //clear the cart of items and total
+      cart = await Cart.findByIdAndUpdate(cart.customer, {
+        $set: {
+          items: [],
+          total: 0,
+        },
+      });
+      return newPendingOrder;
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = {
+  placeOrder, getOrder
+};
+

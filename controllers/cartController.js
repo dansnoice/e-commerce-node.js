@@ -25,8 +25,7 @@ const initCart = async (customer) => {
 //called at the Product POST method to ensure a call to action from cart counter icon in corner
 const makeCart = async (sessionId) => {
   try {
-
-    const cart = await Cart.create({sessionId});
+    const cart = await Cart.create({ sessionId });
     return cart;
   } catch (error) {
     throw error;
@@ -40,7 +39,7 @@ const getCarts = async () => {
     throw error;
   }
 };
-//i will call this from product Controller as I imagine a user viewing a product (a GET request) before deciding to add to cart. for products which may be a combination (sale- toy with batteries - usually sold separately but engaged jointly) we check the body to 
+//i will call this from product Controller as I imagine a user viewing a product (a GET request) before deciding to add to cart. for products which may be a combination (sale- toy with batteries - usually sold separately but engaged jointly) we check the body to
 
 const addProductToCart = async (cartData) => {
   try {
@@ -68,7 +67,8 @@ const addProductToCart = async (cartData) => {
       //find cart
       const cart = await Cart.findOneAndUpdate(
         { sessionId: cartData.sessionId }, // since we don't have a uuid I set query key to sessionId and use the req body sessionId
-        {//push to items every {Product._id:quantity} pair
+        {
+          //push to items every {Product._id:quantity} pair
           $push: { items: { $each: updatedItems } },
           //increment cart total
           $inc: { total: total },
@@ -87,17 +87,63 @@ const addProductToCart = async (cartData) => {
       //make initialize a cart for this guest
       const starterCart = await makeCart(notARealSessionId);
       //now that they have a cart
-      if(starterCart){
+      if (starterCart) {
         //find it
-        const updatedCart = await Cart.findOneAndUpdate
-        (
+        const updatedCart = await Cart.findOneAndUpdate(
           { sessionId: starterCart.sessionId },
           //update it
-        { items: cartData.items },
-        { new: true }
+          { items: cartData.items },
+          { new: true }
         );
         return updatedCart;
       }
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+const updateCartItems = async (cartData) => {
+  try {
+    //build the update information from the request Cart, as before
+    let updatedItems = [];
+    let total = 0;
+
+    //check that our put request has items in the body
+    if (cartData.items.item && cartData.items.quantity) {
+      //for each {Product: Quantity pair}
+      for (const i of cartData.items) {
+        //item=product found by the i (ObjectId: Quantity)
+        const item = await Product.findById(i.item);
+        //tempTotal for each pair, using foundProduct's cost
+        const itemTotal = item.price * i.quantity;
+        //update subtotal
+        total += itemTotal;
+        //push pair to cart update array
+        updatedItems.push({
+          item: item._id,
+          quantity: i.quantity,
+        });
+      }
+      //a little more streamlined - checking if this is a customer or sessionId based cart
+      const query = cartData.customer
+        ? { customer: cartData.customer } //use customer
+        : { guestSessionId: cartData.sessionId }; //else use sessionID
+      //find cart using dynamic query
+      const updatedCart = await Cart.findOneAndUpdate(
+        query,
+        {
+          //instead of updating the information, I overwrite it
+          //as opposed to adding a Product._id:quantity to the array, this assumes we already have a cart and that we're submitting it with different quantities, possibly even removing an item entirely
+          //ex our user decided on a cheaper version of the product, and came back to clean up their cart
+          $set: {
+            items: updatedItems,
+            total: total,
+          },
+        },
+        { new: true }
+      );
+
+      return updatedCart;
     }
   } catch (error) {
     throw error;
@@ -109,7 +155,7 @@ module.exports = {
   makeCart,
   getCarts,
   addProductToCart,
+  updateCartItems,
 };
-
 
 //when you make this cart into an order confirm stock is available, as well as decrement it

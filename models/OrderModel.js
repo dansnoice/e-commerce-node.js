@@ -1,20 +1,28 @@
 const mongoose = require("mongoose");
-const objectId = mongoose.Schema.Types.objectId;
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 //create schema
 const orderSchema = new mongoose.Schema(
   {
     customer: {
-      type: objectId,
+      type: ObjectId,
       ref: "User",
       required: true,
     },
-    items: [
-      {
-        type: objectId,
-        ref: "Item",
-      },
-    ],
+    items: {
+      type: [
+        {
+          item: {
+            type: ObjectId,
+            ref: "Product",
+          },
+          quantity: {
+            type: Number,
+            min:1
+          },
+        },
+      ],
+    },
     total: {
       type: Number,
       default: 0,

@@ -15,11 +15,13 @@ app.use(express.json())
 const customerRouter= require("./routes/customersRouter.js")
 const productsRouter= require("./routes/productsRouter.js")
 const cartsRouter= require("./routes/cartsRouter.js")
+const ordersRouter= require("./routes/ordersRouter.js")
 
 //app.use router Customer base path
 app.use("/api/customers", customerRouter)
 app.use("/api/products", productsRouter)
 app.use("/api/cart", cartsRouter)
+app.use("/api/orders", ordersRouter)
 
 
 
