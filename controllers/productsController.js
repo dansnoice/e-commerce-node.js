@@ -1,6 +1,5 @@
 //import the model
-const Product = require("../models/ProductModel")
-
+const Product = require("../models/ProductModel");
 
 const createProduct = async (productData) => {
   try {
@@ -10,50 +9,66 @@ const createProduct = async (productData) => {
     throw error;
   }
 };
-const getProducts = async () => {
+const getProducts = async (filterQueries) => {
   try {
-    const products = await Product.find()
-    return products
+    const queryObject = {};
+    const sortObject = {};
+
+    if (filterQueries.name) {
+      queryObject.name = filterQueries.name;
+    }
+    if (filterQueries.description) {
+      queryObject.description = filterQueries.description;
+    }
+    if (filterQueries.category) {
+      queryObject.category = filterQueries.category;
+    }
+    if (filterQueries.stock) {
+      queryObject.stock = filterQueries.stock;
+    }
+    if (filterQueries.images) {
+      queryObject.images = filterQueries.images;
+    }
+    if (filterQueries.minPrice || filterQueries.maxPrice) {
+      queryObject.price = {};
+      if (filterQueries.minPrice) {
+        queryObject.price.$gte = Number(filterQueries.minPrice);
+      }
+      if (filterQueries.maxPrice) {
+        queryObject.price.$lte = Number(filterQueries.maxPrice);
+      }
+    } else if (filterQueries.price) {
+      queryObject.price = Number(filterQueries.price);
+    }
+
+    if (filterQueries.sortBy) {
+      const order = filterQueries.sortOrder === "desc" ? -1 : 1;
+      sortObject[filterQueries.sortBy] = order;
+    }
+
+    const products = await Product.find(queryObject).sort(sortObject);
+    return products;
   } catch (error) {
-    throw error
+    throw error;
   }
-}
-
-
-
-
-
-
-
+};
+const updateProduct = async (productId, productData) => {
+  try {
+    const product = await Product.findByIdAndUpdate(productId, productData, {
+      new: true,
+    });
+    return product;
+  } catch (error) {
+    throw error;
+  }
+};
 
 //export
 module.exports = {
   createProduct,
-  getProducts
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  getProducts,
+  updateProduct,
+};
 
 // const productSchema = new mongoose.Schema(
 //   {
