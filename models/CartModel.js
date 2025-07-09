@@ -8,36 +8,37 @@ const cartSchema = new mongoose.Schema(
     customer: {
       type: ObjectId,
       ref: "User",
-      default: null //this allows a cart for a guest user
+      default: null, //this allows a cart for a guest user
       //writing this with more features in mind, intent is to tie the Cart._id to the sessionID for continuity between pages in a full stack situation
       //when the user logs in (but before processing) shipping and payment, the cart objectId will be updated to associate with the User._id as opposed to sessionId based _id.
-      //in the instance that the user is already associated with a cart, their carts should be migrated for review before final purchase. If quantities 
+      //in the instance that the user is already associated with a cart, their carts should be migrated for review before final purchase. If quantities
     },
 
-    guestSessionId: { 
+    guestSessionId: {
       type: String,
-      default: null //through logic elsewhere, if there is not a customer.customer(Customer._id), we will track with sessionId
+      default: null, //through logic elsewhere, if there is not a customer.customer(Customer._id), we will track with sessionId
       //
-
     },
     //items = item:quantity
-    items: [
-      {
-        item: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Item",
+    items: {
+      type: [
+        {
+          item: {
+            type: ObjectId,
+            ref: "Product",
+          },
+          quantity: {
+            type: Number,
+          },
         },
-        quantity: {
-          type: Number,
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
     //in controller set to sum of item*quantity
     total: {
       type: Number,
       default: 0,
     },
-    
   },
   { timestamps: true }
 );

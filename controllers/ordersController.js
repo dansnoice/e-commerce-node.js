@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const objectId = mongoose.Schema.Types.objectId;
+const objectId = mongoose.Schema.Types.ObjectId;
 
 //create schema
 const orderSchema = new mongoose.Schema(

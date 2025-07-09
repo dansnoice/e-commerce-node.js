@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const objectId = mongoose.Schema.Types.ObjectId;
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const customerSchema = new mongoose.Schema(
   {
@@ -21,13 +21,13 @@ const customerSchema = new mongoose.Schema(
     },
     cart: [
       {
-        type: objectId,
+        type: ObjectId,
         ref: "Cart",
       },
     ],
     orders: [
       {
-        type: objectId,
+        type: ObjectId,
         ref: "Order",
       },
     ],
