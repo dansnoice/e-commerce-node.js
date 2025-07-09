@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   createCustomer,
   getCustomers,
+  updateCustomer,
 } = require("../controllers/customersController");
 
 router.post("/", async (req, res) => {
@@ -23,10 +24,10 @@ router.post("/", async (req, res) => {
 });
 router.get("/", async (req, res) => {
   try {
-    const customers = await getCustomers();
+    const customer = await getCustomers(req.params);
     res.status(200).json({
-      message: "Successfully found customers",
-      payload: customers,
+      message: "Successfully found customer",
+      payload: customer,
     });
   } catch (error) {
     res.status(400).json({
@@ -35,26 +36,46 @@ router.get("/", async (req, res) => {
     });
   }
 });
+router.patch("/:customerId", async (req, res) => {
+  try {
+    const customer = await updateCustomer(req.params.customerId, req.body);
+    res.status(200).json({
+      message: `Successfully updated customer: ${customer.name}`,
+      payload: customer,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "failure",
+      payload: error.message,
+    });
+  }
+});
+router.delete("/:customerId", async (req, res) => {
+  try {
+    // find em
+    const checkCustomer = await getCustomers(req.params.customerId);
 
+    if (checkCustomer) {
+      // mash em
+      const customerToDelete = await deleteCustomer(req.params.customerId);
+
+      res.status(200).json({
+        message: `Successfully deleted customer.`,
+        //no payload stew for you
+      });
+    } else {
+      res.status(404).json({
+        message: "Customer not found.",
+      });
+    }
+
+  } catch (error) {
+    res.status(400).json({
+      message: "failure",
+      payload: error.message,
+    });
+  }
+});
 
 //exports
 module.exports = router;
-
-// const customerSchema = new mongoose.Schema({
-//     name: {
-//         type: String,
-//         required: true
-
-//     },
-//     email: {
-//         type: String,
-//         required: true,
-//         unique: true
-//     },
-//     address: {
-//         type: String,
-//     },
-//     phone: {
-//         type: String,
-//         unique: true
-//     }

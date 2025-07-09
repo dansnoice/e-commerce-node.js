@@ -13,7 +13,7 @@ const getProducts = async (filterQueries) => {
   try {
     const queryObject = {};
     const sortObject = {};
-
+    
     if (filterQueries.name) {
       queryObject.name = filterQueries.name;
     }
