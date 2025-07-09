@@ -1,14 +1,24 @@
 const mongoose = require("mongoose");
 
-const objectId = mongoose.Schema.Types.objectId;
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 //create schema
 const cartSchema = new mongoose.Schema(
   {
     customer: {
-      type: objectId,
+      type: ObjectId,
       ref: "User",
-      required: true,
+      default: null //this allows a cart for a guest user
+      //writing this with more features in mind, intent is to tie the Cart._id to the sessionID for continuity between pages in a full stack situation
+      //when the user logs in (but before processing) shipping and payment, the cart objectId will be updated to associate with the User._id as opposed to sessionId based _id.
+      //in the instance that the user is already associated with a cart, their carts should be migrated for review before final purchase. If quantities 
+    },
+
+    guestSessionId: { 
+      type: String,
+      default: null //through logic elsewhere, if there is not a customer.customer(Customer._id), we will track with sessionId
+      //
+
     },
     //items = item:quantity
     items: [
@@ -27,14 +37,7 @@ const cartSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    status: {
-      type: String,
-      //set possible string values
-      enum: ["pending", "shipped", "delivered", "cancelled"],
-      //set default
-      default: "pending",
-      required: true,
-    },
+    
   },
   { timestamps: true }
 );
@@ -42,4 +45,4 @@ const cartSchema = new mongoose.Schema(
 //initialize schema as model
 const Cart = mongoose.model("Cart", cartSchema);
 //export model
-module.exports = Order;
+module.exports = Cart;

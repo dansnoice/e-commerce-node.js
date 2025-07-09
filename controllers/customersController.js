@@ -1,9 +1,11 @@
 //import model
 const Customer = require("../models/CustomerModel");
+const { initCart } = require("./cartController");
 
 const createCustomer = async (customerData) => {
   try {
     const customer = await Customer.create(customerData);
+    initCart(customer)
     return customer;
   } catch (error) {
     throw error;
