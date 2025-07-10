@@ -11,6 +11,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    reviews:{
+      type: String,
+      required: true,
+      default: "Be the first to review this project!" //future goal: only allow a Customer who has purchased the product to leave a review, referencing order history
+    }, 
     price: {
       type: Number,
       reqired: true,
@@ -29,7 +34,7 @@ const productSchema = new mongoose.Schema(
     images: [
       {
         type: String,
-        ////////////////////////////////////Come back here and give it a broken image path default
+        ////////////////////////////////////Come back here and give it a default to an "image not located" image url
         default: "",
       },
     ],

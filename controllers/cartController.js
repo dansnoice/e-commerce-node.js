@@ -3,8 +3,8 @@ const Cart = require("../models/CartModel");
 const crypto = require("crypto");
 const Product = require("../models/ProductModel");
 const { findByIdAndUpdate } = require("../models/OrderModel");
-const mongoose = require("mongoose")
-
+const mongoose = require("mongoose");
+const { type } = require("os");
 
 const generateSessionId = () => {
   return crypto.randomBytes(16).toString("hex"); // hex string --notARealSessionId
@@ -70,15 +70,10 @@ const addProductToCart = async (cartData) => {
           item: item._id,
           quantity: i.quantity,
         });
-        console.log(
-          `this is itemTotal: ${updatedItems} this is ${cartData}`
-        );
+        console.log(`this is itemTotal: ${updatedItems} this is ${cartData}`);
       }
     }
     if (cartData.customer !== null) {
-      console.log(
-        "This is a confirmation that 'if (cartData.customer !== null)' is truthy"
-      );
       const cart = await Cart.findOneAndUpdate(
         { customer: new mongoose.Types.ObjectId(cartData.customer) },
         {
@@ -90,14 +85,10 @@ const addProductToCart = async (cartData) => {
         //will otherwise return old cart
         { new: true }
       );
-      console.log("HERE IS CONSOLE CART OF CUSTOMER" + cart);
       return cart;
     }
     //handling guest cart case - haven't made exclusive yet, but no cart should have both a sessionId && customer
     if (cartData.sessionId !== "null") {
-      console.log(
-        "This is a confirmation that 'if (cartData.sessionId !== null)' is truthy"
-      );
       //find cart
       const cart = await Cart.findOneAndUpdate(
         { sessionId: cartData.sessionId }, // since we don't have a uuid I set query key to sessionId and use the req body sessionId
@@ -146,17 +137,20 @@ const updateCartItems = async (cartData) => {
     if (cartData.items.item && cartData.items.quantity) {
       //for each {Product: Quantity pair}
       for (const i of cartData.items) {
-        //item=product found by the i (ObjectId: Quantity)
-        const item = await Product.findById(i.item);
-        //tempTotal for each pair, using foundProduct's cost
-        const itemTotal = item.price * i.quantity;
-        //update subtotal
-        total += itemTotal;
-        //push pair to cart update array
-        updatedItems.push({
-          item: item._id,
-          quantity: i.quantity,
-        });
+        //if guest/customer decrements product to quantity to 0, I don't want to push the product:quantity pair to my update array
+        if (i.quantity > 0) {
+          //item=product found by the i (ObjectId: Quantity)
+          const item = await Product.findById(i.item);
+          //tempTotal for each pair, using foundProduct's cost
+          const itemTotal = item.price * i.quantity;
+          //update subtotal
+          total += itemTotal;
+          //push pair to cart update array
+          updatedItems.push({
+            item: item._id,
+            quantity: i.quantity,
+          });
+        }
       }
       //a little more streamlined - checking if this is a customer or sessionId based cart
       const query = cartData.customer
@@ -183,6 +177,19 @@ const updateCartItems = async (cartData) => {
     throw error;
   }
 };
+const getCartbyId = async (id) => {
+  try {
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      const cart = await Cart.findById(id);
+      return cart;
+    }
+    //if the URI can't be used as an _id, it must be a guestSessionId
+    const cart = await Cart.findOne({ guestSessionId: id });
+    return cart;
+  } catch (error) {
+    throw error;
+  }
+};
 
 module.exports = {
   initCart,
@@ -190,6 +197,7 @@ module.exports = {
   getCarts,
   addProductToCart,
   updateCartItems,
+  getCartbyId,
 };
 
 //when you make this cart into an order confirm stock is available, as well as decrement it

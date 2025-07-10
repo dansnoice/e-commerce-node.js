@@ -34,6 +34,14 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
       required: true,
     },
+    //in no real world would I want the user to know the UUID of their order
+    //as such I'm going to make a counter
+    orderNumber: {
+      type: Number,
+      required: true,
+      unique: true
+
+    }
   },
   { timestamps: true }
 );
