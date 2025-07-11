@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema(
           },
           quantity: {
             type: Number,
-            min:1
+            min: 1,
           },
         },
       ],
@@ -37,11 +37,9 @@ const orderSchema = new mongoose.Schema(
     //in no real world would I want the user to know the UUID of their order
     //as such I'm going to make a counter
     orderNumber: {
-      type: Number,
+      type: [Number], //Customer may order many times
       required: true,
-      unique: true
-
-    }
+    },
   },
   { timestamps: true }
 );

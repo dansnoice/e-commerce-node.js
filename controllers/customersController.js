@@ -5,8 +5,14 @@ const { initCart } = require("./cartController");
 const createCustomer = async (customerData) => {
   try {
     const customer = await Customer.create(customerData);
-    initCart(customer);
-    return customer;
+    //without the intermidate layers, the customer was finishing the creation operation and returning before it could get a cart created and have the cart._id back to the Customer. So we have to do it this way.
+    await initCart(customer); //MUST wait for cart to be finished being created
+    // const customerWithCart = await Customer.findById(customer._id).populate('cart', 'items -id' ) kept throwing errors for exclusion on field id while I was inside an inclusion projection
+    const customerWithCart = await Customer.findById(customer._id).populate({
+      path: 'cart',
+      select: { items: 1, _id: 0 } //apparently we can do a whole lot with populate, just had to do things a little more selectively
+    })
+    return customerWithCart; 
   } catch (error) {
     throw error;
   }
@@ -19,7 +25,7 @@ const getCustomers = async (params) => {
       query._id = params.customerId;
     }
 
-    const customers = await Customer.find(query);
+    const customers = await Customer.find(query).populate('cart', 'items -_id');
     return customers;
   } catch (error) {
     throw error;

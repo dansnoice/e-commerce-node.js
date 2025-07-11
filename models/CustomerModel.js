@@ -19,12 +19,12 @@ const customerSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
-    cart: [
+    cart: 
       {
         type: ObjectId,
         ref: "Cart",
       },
-    ],
+    
     orders: [
       {
         type: ObjectId,

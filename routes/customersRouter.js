@@ -6,7 +6,9 @@ const {
   createCustomer,
   getCustomers,
   updateCustomer,
+  deleteCustomer,
 } = require("../controllers/customersController");
+const deleteCart = require("../controllers/cartController").deleteCart;
 
 router.post("/", async (req, res) => {
   try {
@@ -57,8 +59,9 @@ router.delete("/:customerId", async (req, res) => {
 
     if (checkCustomer) {
       // mash em
+      await deleteCart(checkCustomer._id);
       const customerToDelete = await deleteCustomer(req.params.customerId);
-
+      await deleteCart(checkCustomer._id)
       res.status(200).json({
         message: `Successfully deleted customer.`,
         //no payload stew for you

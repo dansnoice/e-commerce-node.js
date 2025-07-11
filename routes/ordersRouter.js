@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
-const { placeOrder, getOrder } = require("../controllers/ordersController");
+const { placeOrder, getOrder, updateOrder } = require("../controllers/ordersController");
 const Order = require("../models/OrderModel");
 
 
 
 
 
-//method for dev purposes only - I'd rather just stay in postman than have to run over to mongo
+//becomes protected route, for dev use
 router.get("/", async (req, res) => {
   try {
     const orders = await getOrder()
@@ -38,6 +38,22 @@ router.post("/", async (req,res)=> {
         
     }
 })
+router.patch("/", async (req,res)=> {
+    try {
+        const updatedOrder = await updateOrder(req.body)
+        res.status(200).json({
+            message: "Successfully updated order status",
+            payload: updatedOrder
+        })
+    } catch (error) {
+        res.status(400).json({
+          message: "failure",
+          payload: error.message,
+        });
+        
+    }
+})
 
+//we do not delete orders, we update their status
 
 module.exports = router;

@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
       default: "Be the first to review this project!" //future goal: only allow a Customer who has purchased the product to leave a review, referencing order history
+      //make review a model of its own, associate ObjectId's here. On review creation, do a filtered search for orders containing a positive quantity of the item by the given customer
     }, 
     price: {
       type: Number,
